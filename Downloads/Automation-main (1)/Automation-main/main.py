@@ -59,7 +59,7 @@ def getCases(top_up:int,case_df:dict,pivot:pd.DataFrame,new_pl:int):
     balance = pivot['Balance'].to_list()
     for i in range(len(balance)):
         productBalance = balance[i]
-        if(top_up == 0):
+        if(top_up == 0) or (disposable<0):
             # if no top up left khatam karo hogya bas
             break
         elif(productBalance>top_up):
@@ -189,7 +189,7 @@ def get_top_up(new_df:pd.DataFrame,new_pl:int):
     # nan logic
     products = [x for x in products if x == x]
     # check housing loan first then go up so reverse
-    top_up_list.reverse()
+    # top_up_list.reverse()
     if(len(top_up_list) > 0):
         if(len(products)>0):
             recommendation_string+="You can get a top up on "+', '.join(products)+" based on the amount you have already paid for. "
@@ -263,6 +263,8 @@ def save_as_csv(data_df:pd.DataFrame,pivot_df:pd.DataFrame,csv,filename,info_df:
                     case_2 = case_df.iloc[3:]
                     case_1.to_excel(writer,sheet_name='Case 1',index=False)
                     case_2.to_excel(writer,sheet_name='Case 2',index=False)
+                else:
+                    case_df.to_excel(writer,sheet_name='Case 1',index=False)
             elif(disposable>0) and (delinquency==0):
                 if len(case_df) > 3:
                     case_1 = case_df.iloc[:3]
@@ -396,7 +398,7 @@ def create_loan(text:str):
             except ValueError:
                 EMIValue = 0
         
-        if(ProductsName == '1_CreditCard'):
+        if(ProductsName == 'Credit Card'):
             creditIndex = get_index(text.find('Credit Limit:'),"Credit Limit: Rs. ")
             creditLimit = text[creditIndex:text.find('Collateral Value')-1]
             try:
