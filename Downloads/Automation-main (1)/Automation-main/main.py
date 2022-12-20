@@ -253,11 +253,11 @@ def save_as_csv(data_df:pd.DataFrame,pivot_df:pd.DataFrame,csv,filename,info_df:
         info_df.to_csv(f'{filePath}/csv/{filename}_CAR_3.csv',index=False)
         rec_df.to_csv(f'{filePath}/csv/{filename}_CAR_4.csv',index=False)
     else:
-        try:
+        '''try:
             os.mkdir(f'{filePath}/excel')
         except FileExistsError:
-            pass
-        with pd.ExcelWriter(f'{filePath}/excel/{filename}_CAR.xlsx') as writer:
+            pass'''
+        with pd.ExcelWriter(f'{filePath}/{filename}_CAR.xlsx') as writer:
             data_df.to_excel(writer,sheet_name='All data',index=False)
             pivot_df.to_excel(writer,sheet_name='Pivot data',index=True)
             info_df.to_excel(writer,sheet_name='Info',index=False)
