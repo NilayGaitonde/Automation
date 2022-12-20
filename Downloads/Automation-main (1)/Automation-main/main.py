@@ -88,51 +88,54 @@ def getCases(top_up:int,case_df:dict,pivot:pd.DataFrame,new_pl:int):
 
 # generate the cases if new pl is present, this is a different function because we need to check all the indices again and plus there was an error in the recommendation_string
 def get_newpl_cases(case_df, pivot, new_pl, balance):
-    global recommendation_string
-    tentative_string =[]
-    if(balance == 0):
-        try:
-            balance = pivot['Balance'].to_list()
-        except KeyError:
-            balance = 0
-            # if no balance is present then return the case_df and khatam bas boht hogya
-            return case_df
-    else:
-        pass
-    balance = [i for i in balance if i != 0]
-    # remove all those where balance is 0
-    if(len(balance) > 0):
-        for i in range(len(balance)):
-            productBalance = balance[i]
-            if(productBalance == 0):
-                break
-            elif(new_pl == 0):
+    try:
+        global recommendation_string
+        tentative_string =[]
+        if(balance == 0):
+            try:
+                balance = pivot['Balance'].to_list()
+            except KeyError:
+                balance = 0
+                # if no balance is present then return the case_df and khatam bas boht hogya
+                return case_df
+        else:
+            pass
+        balance = [i for i in balance if i != 0]
+        # remove all those where balance is 0
+        if(len(balance) > 0):
+            for i in range(len(balance)):
+                productBalance = balance[i]
+                if(productBalance == 0):
                     break
-            elif(productBalance>new_pl):
-                # REDUCE CONDITION WILL HAVE {REDUCE PRODUCT: OUTSTANDING PRODUCT VALUE}
-                case_df['Sentence'].append(f'Outstanding {pivot.index[i]} balance')
-                case_df['Value'].append(productBalance)
-                case_df['Sentence'].append(f"Remaining {pivot.index[i]} balance")
-                tentative_string.append(f", Reduce {pivot.index[i]}")
-                balance[i] = productBalance - new_pl
-                new_pl = 0
-                case_df["Value"].append(productBalance-new_pl)
-            elif(productBalance<new_pl):
-                # REMOVE CONDITION WILL HAVE {REMOVE PRODUCT: TOP UP VALUE}
-                case_df['Sentence'].append(f"Outstanding {pivot.index[i]} balance")
-                case_df['Value'].append(productBalance)
-                case_df['Sentence'].append(f"Remaining New PL balance")
-                tentative_string.append(f", Remove {pivot.index[i]}")
-                new_pl = new_pl - productBalance
-                balance[i] = 0
-                case_df['Value'].append(new_pl)
-            else:
-                print("No recommendation")
-        tentative_string = set(tentative_string)
-        recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
-    else:
+                elif(new_pl == 0):
+                    break
+                elif(productBalance>new_pl):
+                    # REDUCE CONDITION WILL HAVE {REDUCE PRODUCT: OUTSTANDING PRODUCT VALUE}
+                    case_df['Sentence'].append(f'Outstanding {pivot.index[i]} balance')
+                    case_df['Value'].append(productBalance)
+                    case_df['Sentence'].append(f"Remaining {pivot.index[i]} balance")
+                    tentative_string.append(f", Reduce {pivot.index[i]}")
+                    balance[i] = productBalance - new_pl
+                    new_pl = 0
+                    case_df["Value"].append(productBalance-new_pl)
+                elif(productBalance<new_pl):
+                    # REMOVE CONDITION WILL HAVE {REMOVE PRODUCT: TOP UP VALUE}
+                    case_df['Sentence'].append(f"Outstanding {pivot.index[i]} balance")
+                    case_df['Value'].append(productBalance)
+                    case_df['Sentence'].append(f"Remaining New PL balance")
+                    tentative_string.append(f", Remove {pivot.index[i]}")
+                    new_pl = new_pl - productBalance
+                    balance[i] = 0
+                    case_df['Value'].append(new_pl)
+                else:
+                    print("No recommendation")
+            tentative_string = set(tentative_string)
+            recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
+        else:
+            pass
+    except IndexError:
         pass
-    return case_df
+        return case_df
 
 # check if any top ups are available
 def get_top_up(new_df:pd.DataFrame,new_pl:int):
@@ -189,8 +192,10 @@ def get_top_up(new_df:pd.DataFrame,new_pl:int):
     # nan logic
     products = [x for x in products if x == x]
     # check housing loan first then go up so reverse
-    # top_up_list.reverse()
-    if(len(top_up_list) > 0):
+    top_up_list.reverse()
+    if(disposable<0):
+        pass
+    elif(len(top_up_list) > 0):
         if(len(products)>0):
             recommendation_string+="You can get a top up on "+', '.join(products)+" based on the amount you have already paid for. "
         else:
@@ -281,14 +286,8 @@ def save_as_csv(data_df:pd.DataFrame,pivot_df:pd.DataFrame,csv,filename,info_df:
                     case_2.to_excel(writer,sheet_name='Case 2',index=False)
                 else:
                     case_df.to_excel(writer,sheet_name='Case 1',index=False)
-            elif(disposable<0) and (delinquency==0):
-                if len(case_df) > 3:
-                    case_1 = case_df.iloc[:3]
-                    case_2 = case_df.iloc[3:]
-                    case_1.to_excel(writer,sheet_name='Case 1',index=False)
-                    case_2.to_excel(writer,sheet_name='Case 2',index=False)
-                else:
-                    case_df.to_excel(writer,sheet_name='Case 1',index=False)
+            elif(disposable<0):
+                pass
             else:
                 pass
 def create_loan(text:str):
