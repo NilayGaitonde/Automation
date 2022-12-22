@@ -83,7 +83,10 @@ def getCases(top_up:int,case_df:dict,pivot:pd.DataFrame,new_pl:int):
         else:
             print("No recommendation")
     tentative_string = set(tentative_string)
-    recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
+    if(len(tentative_string)>0):
+        recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
+    else:
+        pass
     return case_df,balance
 
 # generate the cases if new pl is present, this is a different function because we need to check all the indices again and plus there was an error in the recommendation_string
@@ -130,12 +133,15 @@ def get_newpl_cases(case_df, pivot, new_pl, balance):
                 else:
                     print("No recommendation")
             tentative_string = set(tentative_string)
-            recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
+            if(len(tentative_string)>0):
+                recommendation_string+=" We recommend you use this to "+" ".join(tentative_string)+"."
+            else:
+                pass
         else:
             pass
     except IndexError:
         pass
-        return case_df
+    return case_df
 
 # check if any top ups are available
 def get_top_up(new_df:pd.DataFrame,new_pl:int):
@@ -305,47 +311,89 @@ def create_loan(text:str):
         text = text[accountNoIndex+1:]
         '''DELINQUENCIES COUNT'''
         delinquenciesIndex = get_index(text.find("Suit Filed Status:"),"Suit Filed Status:")
-        if(text[delinquenciesIndex+1].strip() == "H"):
-            delinquencyString = text[(delinquenciesIndex+len("HistoryAccount Status:Asset Classification:Suit Filed Status:")+4):(text.find("Acct # :"))]
-            # print(delinquencyString)
-            # Get all index of string "-22" is present in the delinquency string
-            index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
-            if(len(index)>0):
-                for indice in index:
-                    month_string = delinquencyString[indice:indice+5]
-                    try:
-                        input_month = datetime.datetime.strptime(month_string, "%m-%y")
-                    except ValueError:
-                        pass
-                    if(diff_month(today_date,input_month)<=7):
-                        print(input_month)
-                        six_months.append(indice)
-                    else:
-                        pass
-                if(len(six_months)>0):
-                    delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
-                    delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
+        if(countAcc==1):
+            if(text[delinquenciesIndex+1].strip() == "H"):
+                delinquencyString = text[(delinquenciesIndex+len("HistoryAccount Status:Asset Classification:Suit Filed Status:")+4):(text.find("Enquiry Summary:"))]
+                # print(delinquencyString)
+                # Get all index of string "-22" is present in the delinquency string
+                index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
+                if(len(index)>0):
+                    for indice in index:
+                        month_string = delinquencyString[indice:indice+5]
+                        try:
+                            input_month = datetime.datetime.strptime(month_string, "%m-%y")
+                        except ValueError:
+                            pass
+                        if(diff_month(today_date,input_month)<=7):
+                            print(input_month)
+                            six_months.append(indice)
+                        else:
+                            pass
+                    if(len(six_months)>0):
+                        delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
+                        delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
+            else:
+                delinquencyString = text[(delinquenciesIndex+len("Account Status:Asset Classification:Suit Filed Status:")+4):(text.find("Enquiry Summary:"))]
+        # print(delinquencyString)
+        # Get all index of string "-22" is present in the delinquency string
+                index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
+                if(len(index)>0):
+                    for indice in index:
+                        month_string = delinquencyString[indice:indice+5]
+                        try:
+                            input_month = datetime.datetime.strptime(month_string, "%m-%y")
+                        except ValueError:
+                            pass
+                        if(diff_month(today_date,input_month)<=7):
+                            print(input_month)
+                            six_months.append(indice)
+                        else:
+                            pass
+                    if(len(six_months)>0):
+                        delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
+                        delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
         else:
-            delinquencyString = text[(delinquenciesIndex+len("Account Status:Asset Classification:Suit Filed Status:")+4):(text.find("Acct # :"))]
-    # print(delinquencyString)
-    # Get all index of string "-22" is present in the delinquency string
-            index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
-            if(len(index)>0):
-                for indice in index:
-                    month_string = delinquencyString[indice:indice+5]
-                    try:
-                        input_month = datetime.datetime.strptime(month_string, "%m-%y")
-                    except ValueError:
-                        pass
-                    if(diff_month(today_date,input_month)<=7):
-                        print(input_month)
-                        six_months.append(indice)
-                    else:
-                        pass
-                if(len(six_months)>0):
-                    delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
-                    delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
-
+            if(text[delinquenciesIndex+1].strip() == "H"):
+                delinquencyString = text[(delinquenciesIndex+len("HistoryAccount Status:Asset Classification:Suit Filed Status:")+4):(text.find("Acct # :"))]
+                # print(delinquencyString)
+                # Get all index of string "-22" is present in the delinquency string
+                index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
+                if(len(index)>0):
+                    for indice in index:
+                        month_string = delinquencyString[indice:indice+5]
+                        try:
+                            input_month = datetime.datetime.strptime(month_string, "%m-%y")
+                        except ValueError:
+                            pass
+                        if(diff_month(today_date,input_month)<=7):
+                            print(input_month)
+                            six_months.append(indice)
+                        else:
+                            pass
+                    if(len(six_months)>0):
+                        delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
+                        delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
+            else:
+                delinquencyString = text[(delinquenciesIndex+len("Account Status:Asset Classification:Suit Filed Status:")+4):(text.find("Acct # :"))]
+        # print(delinquencyString)
+        # Get all index of string "-22" is present in the delinquency string
+                index = [m.start() for m in re.finditer(month_year_regex,delinquencyString)]
+                if(len(index)>0):
+                    for indice in index:
+                        month_string = delinquencyString[indice[0]:indice+5]
+                        try:
+                            input_month = datetime.datetime.strptime(month_string, "%m-%y")
+                        except ValueError:
+                            pass
+                        if(diff_month(today_date,input_month)<=7):
+                            print(input_month)
+                            six_months.append(indice)
+                        else:
+                            pass
+                    if(len(six_months)>0):
+                        delinquencyString = delinquencyString[six_months[0]:(six_months[-1]+2)]
+                        delinquenciesCount = (delinquencyString.count("+")+delinquencyString.count("CLSD")+delinquencyString.count("WOF")+delinquencyString.count("RCV"))
+        print(delinquencyString)
 
         '''OPEN'''
             
